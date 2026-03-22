@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
+import { getDemoAuthUserByEmail } from "@/lib/demo-auth-store";
 import { env, isSupabaseConfigured } from "@/lib/env";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { AdminUser } from "@/types/domain";
@@ -32,14 +33,20 @@ export async function getCurrentAdmin(): Promise<AdminUser | null> {
   const cookieStore = await cookies();
   const sessionValue = cookieStore.get(DEMO_COOKIE)?.value;
 
-  if (sessionValue !== env.demoAdminEmail) {
+  if (!sessionValue) {
+    return null;
+  }
+
+  const demoUser = await getDemoAuthUserByEmail(sessionValue);
+
+  if (!demoUser) {
     return null;
   }
 
   return {
-    id: "demo-admin",
-    email: env.demoAdminEmail,
-    fullName: "Hospital SNS Admin",
+    id: demoUser.id,
+    email: demoUser.email,
+    fullName: demoUser.fullName,
     role: "admin",
   };
 }
@@ -56,7 +63,7 @@ export async function requireAdmin() {
 
 export async function setDemoSession(email: string) {
   const cookieStore = await cookies();
-  cookieStore.set(DEMO_COOKIE, email, {
+  cookieStore.set(DEMO_COOKIE, email.trim().toLowerCase(), {
     httpOnly: true,
     sameSite: "lax",
     path: "/",
@@ -67,4 +74,3 @@ export async function clearDemoSession() {
   const cookieStore = await cookies();
   cookieStore.delete(DEMO_COOKIE);
 }
-

@@ -47,6 +47,25 @@ npm run dev
 
 4. 브라우저에서 `http://localhost:3000` 접속
 
+## Preview Before Vercel
+
+배포 전에 화면을 확인하는 가장 빠른 방법은 로컬 실행입니다.
+
+```bash
+npm run dev
+```
+
+- 브라우저에서 `http://localhost:3000`
+- 데모 모드에서는 로그인/회원가입 화면을 바로 테스트 가능
+- Supabase를 연결했다면 실제 Auth 회원가입 흐름도 함께 확인 가능
+
+배포 환경과 비슷하게 확인하고 싶다면 아래로 프로덕션 서버를 로컬에서 띄울 수 있습니다.
+
+```bash
+npm run build
+npm start
+```
+
 ## Demo Mode
 
 Supabase 환경 변수를 비워두면 데모 모드로 동작합니다.

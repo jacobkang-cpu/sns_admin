@@ -1,6 +1,6 @@
 import { LockKeyhole, Sparkles } from "lucide-react";
 
-import { LoginForm } from "@/components/forms/login-form";
+import { AuthForm } from "@/components/forms/auth-form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { isSupabaseConfigured } from "@/lib/env";
 
@@ -58,16 +58,16 @@ export default function LoginPage() {
               <LockKeyhole className="h-5 w-5" />
             </div>
             <div className="space-y-1">
-              <CardTitle>관리자 로그인</CardTitle>
+              <CardTitle>로그인 / 회원가입</CardTitle>
               <p className="text-sm text-muted-foreground">
                 {demoMode
-                  ? "Supabase 미연결 상태에서는 데모 계정으로 로그인합니다."
-                  : "Supabase Auth 기반 관리자 계정으로 로그인합니다."}
+                  ? "Supabase 미연결 상태에서는 데모 계정 로그인과 로컬 회원가입을 모두 사용할 수 있습니다."
+                  : "Supabase Auth 기반으로 관리자 계정을 생성하고 로그인할 수 있습니다."}
               </p>
             </div>
           </CardHeader>
           <CardContent>
-            <LoginForm demoMode={demoMode} />
+            <AuthForm demoMode={demoMode} />
           </CardContent>
         </Card>
       </div>

@@ -21,6 +21,18 @@ export const loginSchema = z.object({
   password: z.string().min(6, "비밀번호를 6자 이상 입력해 주세요."),
 });
 
+export const signUpSchema = z
+  .object({
+    fullName: z.string().min(2, "이름을 2자 이상 입력해 주세요."),
+    email: z.string().email("유효한 이메일을 입력해 주세요."),
+    password: z.string().min(8, "비밀번호를 8자 이상 입력해 주세요."),
+    confirmPassword: z.string().min(8, "비밀번호 확인을 입력해 주세요."),
+  })
+  .refine((value) => value.password === value.confirmPassword, {
+    path: ["confirmPassword"],
+    message: "비밀번호가 일치하지 않습니다.",
+  });
+
 export const approvalSchema = z.object({
   contentId: z.string().min(1),
   nextStatus: z.enum(contentStatusValues),

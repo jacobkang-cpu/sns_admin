@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
+import { createDemoAuthUser, getDemoAuthUserByEmail } from "@/lib/demo-auth-store";
 import { env, isSupabaseConfigured } from "@/lib/env";
 import {
   generateChannelCopiesForContent,
@@ -20,6 +21,7 @@ import {
   loginSchema,
   markPostedSchema,
   metricSchema,
+  signUpSchema,
 } from "@/lib/validators";
 import type { ActionState } from "@/types/domain";
 
@@ -71,17 +73,81 @@ export async function loginAction(
       };
     }
   } else {
-    if (
-      parsed.data.email !== env.demoAdminEmail ||
-      parsed.data.password !== env.demoAdminPassword
-    ) {
+    const demoUser = await getDemoAuthUserByEmail(parsed.data.email);
+
+    if (!demoUser || demoUser.password !== parsed.data.password) {
       return {
         status: "error",
-        message: "데모 관리자 계정 정보가 올바르지 않습니다.",
+        message: "이메일 또는 비밀번호가 올바르지 않습니다.",
       };
     }
 
-    await setDemoSession(parsed.data.email);
+    await setDemoSession(demoUser.email);
+  }
+
+  redirect("/dashboard");
+}
+
+export async function signUpAction(
+  _prevState: ActionState<"fullName" | "email" | "password" | "confirmPassword">,
+  formData: FormData,
+): Promise<ActionState<"fullName" | "email" | "password" | "confirmPassword">> {
+  const parsed = signUpSchema.safeParse({
+    fullName: formData.get("fullName"),
+    email: formData.get("email"),
+    password: formData.get("password"),
+    confirmPassword: formData.get("confirmPassword"),
+  });
+
+  if (!parsed.success) {
+    return validationErrorToActionState(parsed.error);
+  }
+
+  if (isSupabaseConfigured) {
+    const supabase = await createServerSupabaseClient();
+    const { data, error } = await supabase.auth.signUp({
+      email: parsed.data.email,
+      password: parsed.data.password,
+      options: {
+        emailRedirectTo: `${env.appUrl}/login`,
+        data: {
+          full_name: parsed.data.fullName,
+          role: "admin",
+        },
+      },
+    });
+
+    if (error) {
+      return {
+        status: "error",
+        message: error.message,
+      };
+    }
+
+    if (data.session) {
+      redirect("/dashboard");
+    }
+
+    return {
+      status: "success",
+      message:
+        "회원가입이 완료되었습니다. 이메일 인증이 켜져 있다면 메일 확인 후 로그인해 주세요.",
+    };
+  }
+
+  try {
+    const demoUser = await createDemoAuthUser({
+      email: parsed.data.email,
+      fullName: parsed.data.fullName,
+      password: parsed.data.password,
+    });
+    await setDemoSession(demoUser.email);
+  } catch (error) {
+    return {
+      status: "error",
+      message:
+        error instanceof Error ? error.message : "회원가입에 실패했습니다.",
+    };
   }
 
   redirect("/dashboard");
