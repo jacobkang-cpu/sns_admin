@@ -1,3 +1,4 @@
+import { AiDraftGeneratorForm } from "@/components/forms/ai-draft-generator-form";
 import Link from "next/link";
 
 import { EmptyState } from "@/components/empty-state";
@@ -43,6 +44,7 @@ export default async function ContentsPage({
         eyebrow="Content Inventory"
         title="콘텐츠 리스트"
         description="테이블과 필터로 초안 상태, 포맷, 타깃별 운영 현황을 빠르게 탐색합니다."
+        action={<AiDraftGeneratorForm />}
       />
 
       <Card>

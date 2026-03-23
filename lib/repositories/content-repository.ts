@@ -15,6 +15,7 @@ import type {
   ContentStatus,
   DashboardSummary,
   DemoDatabase,
+  GeneratedDraftInput,
   GenerationSettings,
   PerformanceMetric,
 } from "@/types/domain";
@@ -311,6 +312,151 @@ async function updateDemoDb(
   const db = await readDemoDatabase();
   await updater(db);
   await writeDemoDatabase(db);
+}
+
+export async function createDraftContents(params: {
+  drafts: GeneratedDraftInput[];
+  adminId: string;
+}) {
+  const now = new Date().toISOString();
+
+  if (isSupabaseConfigured) {
+    const supabase = (await createServerSupabaseClient()) as any;
+
+    for (const draft of params.drafts) {
+      const contentId = randomUUID();
+      const { error: contentError } = await supabase.from("content_items").insert({
+        id: contentId,
+        title: draft.title,
+        target_audience: draft.targetAudience,
+        format_type: draft.formatType,
+        core_message: draft.coreMessage,
+        body_draft: draft.bodyDraft,
+        production_guide: draft.productionGuide,
+        expected_reaction_points: draft.expectedReactionPoints,
+        status: "draft",
+        created_by: params.adminId,
+        created_at: now,
+        updated_at: now,
+      });
+
+      if (contentError) {
+        throw new Error(contentError.message);
+      }
+
+      const { error: hookError } = await supabase.from("content_hooks").insert(
+        draft.hooks.map((hook, index) => ({
+          id: randomUUID(),
+          content_item_id: contentId,
+          hook_text: hook,
+          position: index + 1,
+        })),
+      );
+
+      if (hookError) {
+        throw new Error(hookError.message);
+      }
+
+      const { error: ctaError } = await supabase.from("content_ctas").insert(
+        draft.ctas.map((cta, index) => ({
+          id: randomUUID(),
+          content_item_id: contentId,
+          cta_text: cta,
+          position: index + 1,
+        })),
+      );
+
+      if (ctaError) {
+        throw new Error(ctaError.message);
+      }
+
+      const { error: tagError } = await supabase.from("content_tags").insert(
+        draft.tags.map((tag) => ({
+          id: randomUUID(),
+          content_item_id: contentId,
+          tag,
+        })),
+      );
+
+      if (tagError) {
+        throw new Error(tagError.message);
+      }
+
+      const { error: logError } = await supabase.from("approval_logs").insert({
+        id: randomUUID(),
+        content_item_id: contentId,
+        from_status: null,
+        to_status: "draft",
+        note: "AI 초안 생성",
+        created_by: params.adminId,
+        created_at: now,
+      });
+
+      if (logError) {
+        throw new Error(logError.message);
+      }
+    }
+
+    return;
+  }
+
+  await updateDemoDb((db) => {
+    for (const draft of params.drafts) {
+      const contentId = randomUUID();
+
+      db.contentItems.unshift({
+        id: contentId,
+        title: draft.title,
+        targetAudience: draft.targetAudience,
+        formatType: draft.formatType,
+        coreMessage: draft.coreMessage,
+        bodyDraft: draft.bodyDraft,
+        productionGuide: draft.productionGuide,
+        expectedReactionPoints: draft.expectedReactionPoints,
+        status: "draft",
+        createdAt: now,
+        updatedAt: now,
+        publishedAt: null,
+        createdBy: params.adminId,
+      });
+
+      db.contentHooks.push(
+        ...draft.hooks.map((hook, index) => ({
+          id: randomUUID(),
+          contentItemId: contentId,
+          hookText: hook,
+          position: index + 1,
+        })),
+      );
+
+      db.contentCtas.push(
+        ...draft.ctas.map((cta, index) => ({
+          id: randomUUID(),
+          contentItemId: contentId,
+          ctaText: cta,
+          position: index + 1,
+        })),
+      );
+
+      db.contentTags.push(
+        ...draft.tags.map((tag) => ({
+          id: randomUUID(),
+          contentItemId: contentId,
+          tag,
+        })),
+      );
+
+      db.approvalLogs.unshift({
+        id: randomUUID(),
+        contentItemId: contentId,
+        fromStatus: null,
+        toStatus: "draft",
+        note: "AI 초안 생성",
+        createdBy: params.adminId,
+        createdAt: now,
+      });
+    }
+  });
 }
 
 async function logSupabaseStatusChange(

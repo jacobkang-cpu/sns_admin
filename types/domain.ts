@@ -117,6 +117,19 @@ export interface GenerationSettings {
   promptGuardrails: string[];
 }
 
+export interface GeneratedDraftInput {
+  title: string;
+  targetAudience: string;
+  formatType: FormatType;
+  coreMessage: string;
+  hooks: string[];
+  bodyDraft: string;
+  ctas: string[];
+  productionGuide: string;
+  tags: string[];
+  expectedReactionPoints: string;
+}
+
 export interface DemoDatabase {
   users: AdminUser[];
   contentItems: ContentItemRecord[];

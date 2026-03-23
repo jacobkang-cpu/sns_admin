@@ -1,3 +1,4 @@
+import { AiDraftGeneratorForm } from "@/components/forms/ai-draft-generator-form";
 import { ContentCard } from "@/components/content-card";
 import { EmptyState } from "@/components/empty-state";
 import { MetricsSummary } from "@/components/metrics-summary";
@@ -37,6 +38,7 @@ export default async function DashboardPage() {
         eyebrow="Operations Overview"
         title="콘텐츠 승인부터 게시 준비까지 한 화면에서 관리합니다"
         description="초안 상태, 승인 대기 수, 게시 준비 큐, 누적 성과를 함께 확인할 수 있는 운영 대시보드입니다."
+        action={<AiDraftGeneratorForm />}
       />
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -124,4 +126,3 @@ export default async function DashboardPage() {
     </div>
   );
 }
-

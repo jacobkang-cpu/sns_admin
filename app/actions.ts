@@ -3,10 +3,13 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
+import { generateHospitalContentDrafts } from "@/lib/ai-content-generator";
 import { createDemoAuthUser, getDemoAuthUserByEmail } from "@/lib/demo-auth-store";
 import { env, isSupabaseConfigured } from "@/lib/env";
 import {
+  createDraftContents,
   generateChannelCopiesForContent,
+  getGenerationSettings,
   markContentPosted,
   saveGenerationSettings,
   savePerformanceMetric,
@@ -162,6 +165,37 @@ export async function logoutAction() {
   }
 
   redirect("/login");
+}
+
+export async function generateAiDraftsAction(
+  _prevState: ActionState,
+  _formData: FormData,
+): Promise<ActionState> {
+  const admin = await requireAdmin();
+
+  try {
+    const settings = await getGenerationSettings();
+    const drafts = await generateHospitalContentDrafts(settings);
+    await createDraftContents({
+      drafts,
+      adminId: admin.id,
+    });
+
+    revalidatePath("/dashboard");
+    revalidatePath("/contents");
+    revalidatePath("/approvals");
+
+    return {
+      status: "success",
+      message: "AI 초안 3건을 draft 상태로 저장했습니다.",
+    };
+  } catch (error) {
+    return {
+      status: "error",
+      message:
+        error instanceof Error ? error.message : "AI 초안 생성에 실패했습니다.",
+    };
+  }
 }
 
 export async function updateContentStatusAction(

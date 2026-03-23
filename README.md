@@ -21,6 +21,7 @@
 - `/publishing` approved 콘텐츠 채널 문안 생성 및 복사
 - `/metrics` posted 콘텐츠 성과 입력
 - `/settings/generation` 생성 설정 관리
+- 대시보드/콘텐츠 화면에서 `AI 초안 생성` 버튼으로 GPT 기반 draft 3건 생성
 - 상태 변경 시 `approval_logs` 기록
 - 대시보드에 metrics summary 반영
 - 시드 콘텐츠 10건
@@ -89,6 +90,8 @@ Supabase 환경 변수를 비워두면 데모 모드로 동작합니다.
 NEXT_PUBLIC_SUPABASE_URL=...
 NEXT_PUBLIC_SUPABASE_ANON_KEY=...
 SUPABASE_SERVICE_ROLE_KEY=...
+OPENAI_API_KEY=...
+OPENAI_MODEL=gpt-5-mini
 ```
 
 5. Supabase Auth에서 관리자 사용자를 생성하고, 로그인 계정으로 사용
@@ -104,6 +107,7 @@ SUPABASE_SERVICE_ROLE_KEY=...
 ## Notes
 
 - 채널 문안은 `approved` 상태에서만 생성됩니다.
+- `AI 초안 생성`은 OpenAI API를 호출해 3개의 콘텐츠를 만들고 `draft` 상태로만 저장합니다.
 - 게시 완료 처리는 수동 SNS 업로드 이후 운영자가 실행합니다.
 - `posted` 상태가 된 콘텐츠만 metrics 입력이 가능합니다.
 - 앱은 서버 액션 기반으로 상태 변경, 문안 생성, 성과 저장을 처리합니다.
