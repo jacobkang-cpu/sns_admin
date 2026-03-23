@@ -267,9 +267,7 @@ export async function getApprovalsQueue() {
 
 export async function getPublishingQueue() {
   const contents = await listContents();
-  return contents.filter((item) =>
-    item.status === "approved" || item.status === "posted",
-  );
+  return contents.filter((item) => item.status === "approved");
 }
 
 export async function getMetricsItems() {

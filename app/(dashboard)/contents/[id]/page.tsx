@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 
-import { ApprovalForm } from "@/components/forms/approval-form";
+import { ApprovalQuickActionsForm } from "@/components/forms/approval-quick-actions-form";
 import { GenerateCopiesForm } from "@/components/forms/generate-copies-form";
 import { MarkPostedForm } from "@/components/forms/mark-posted-form";
 import { CopyButton } from "@/components/copy-button";
@@ -36,6 +36,9 @@ export default async function ContentDetailPage({
   }
 
   const hasCopies = content.channelCopies.length > 0;
+  const instagramCopy = content.channelCopies.find(
+    (copy) => copy.channel === "instagram",
+  );
 
   return (
     <div className="space-y-6">
@@ -240,7 +243,7 @@ export default async function ContentDetailPage({
               <CardTitle>검토 액션</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <ApprovalForm contentId={content.id} />
+              <ApprovalQuickActionsForm contentId={content.id} />
             </CardContent>
           </Card>
 
@@ -258,6 +261,12 @@ export default async function ContentDetailPage({
               )}
               {content.status === "approved" && hasCopies ? (
                 <MarkPostedForm contentId={content.id} />
+              ) : null}
+              {instagramCopy ? (
+                <CopyButton
+                  label="인스타 캡션 복사"
+                  value={`${instagramCopy.copyText}\n\n${instagramCopy.hashtags.join(" ")}\n\n${instagramCopy.callToAction}`}
+                />
               ) : null}
             </CardContent>
           </Card>
@@ -293,4 +302,3 @@ export default async function ContentDetailPage({
     </div>
   );
 }
-

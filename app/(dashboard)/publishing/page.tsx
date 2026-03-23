@@ -17,7 +17,7 @@ export default async function PublishingPage() {
       <PageHeader
         eyebrow="Publishing Desk"
         title="게시 준비"
-        description="approved 콘텐츠의 채널별 문안을 생성하고, 복사 후 게시 완료 처리합니다. 자동 업로드는 제공하지 않습니다."
+        description="approved 상태의 콘텐츠만 이 화면에 표시됩니다. 채널 문안을 생성하고 복사한 뒤, 수동 게시 후 게시 완료 처리만 진행합니다."
       />
 
       {items.length ? (
@@ -40,10 +40,8 @@ export default async function PublishingPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex flex-wrap gap-3">
-                  {content.status === "approved" ? (
-                    <GenerateCopiesForm contentId={content.id} />
-                  ) : null}
-                  {content.status === "approved" && content.channelCopies.length ? (
+                  <GenerateCopiesForm contentId={content.id} />
+                  {content.channelCopies.length ? (
                     <MarkPostedForm contentId={content.id} />
                   ) : null}
                 </div>
@@ -89,10 +87,11 @@ export default async function PublishingPage() {
         </div>
       ) : (
         <EmptyState
-          title="게시 가능한 콘텐츠가 없습니다"
-          description="approved 또는 posted 상태의 콘텐츠가 생성되면 이 화면에 표시됩니다."
+          title="게시 준비 콘텐츠가 없습니다"
+          description="approved 상태의 콘텐츠가 생성되면 이 화면에 표시됩니다."
         />
       )}
     </div>
   );
 }
+
